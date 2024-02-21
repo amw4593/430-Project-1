@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Our simple HTTP server</title>
+  <link rel="stylesheet" type="text/css" href="/style.css">
+  
+  <script>
+const handleResponse = async (response, parseResponse) => {
+  const content = document.querySelector('#content');
+
+  switch (response.status) {
+    case 200:
+      content.innerHTML = '<b>Success</b>';
+      break;
+    case 201:
+      content.innerHTML = '<b>Created</b>';
+      break;
+    case 204:
+      content.innerHTML = '<b>No Content</b>';
+      break;
+    case 400:
+      content.innerHTML = `<b>Bad Request</b>`;
+      break;
+    case 404:
+      content.innerHTML = '<b>Resource Not Found</b>';
+      break;
+    default:
+      content.innerHTML = `Error code not implemented by client.`;
+      break;
+  }
+
+  if (parseResponse && response.status !== 204) {
+    const obj = await response.json();
+
+    if(obj.users) {
+      content.innerHTML += `<p>${JSON.stringify(obj.users)}</p>`;
+    }
+
+    if(obj.message) {
+      content.innerHTML += `<p>Message: ${obj.message}</p>`;
+    }
+
+  } else {
+    content.innerHTML += '<p>Meta Data Received</p>';
+  }
+};
+
+const sendPost = async (form) => {
+  const url = form.getAttribute('action');
+  const name = form.querySelector('#nameField').value;
+  const age = form.querySelector('#ageField').value;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'x-www-form-urlencoded'
+    },
+    body: `name=${name}&age=${age}`,
+  });
+
+  handleResponse(response, true);
+}
+
+const requestUpdate = async (userForm) => {
+  const url = userForm.querySelector('#urlField').value;
+  const method = userForm.querySelector('#methodSelect').value;
+
+  try {
+    let response = await fetch(url, {
+      method,
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    handleResponse(response, method === 'get');
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+
+const init = () => {
+  const userForm = document.querySelector('#userForm');
+  const nameForm = document.querySelector('#nameForm');
+
+  const addUser = (e) => {
+    e.preventDefault();
+    sendPost(nameForm);
+    return false;
+  }
+
+  const getUsers = (e) => {
+    e.preventDefault();
+    requestUpdate(userForm);
+    return false;
+  }
+
+  userForm.addEventListener('submit', getUsers);
+  nameForm.addEventListener('submit', addUser);
+};
+
+window.onload = init;
+  </script>
+</head>
+<body>
+  <section id="top">
+    <h3>POST Status Code Tests</h3>
+    <form id="nameForm" action="/addUser" method="post">
+      <label for="name">Name: </label>
+      <input id="nameField" type="text" name="name" />
+      <label for="age">Age: </label>
+      <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
+      <input type="submit" value="Add User" />
+    </form>
+    <form id="userForm" action="/getUsers" method="get">
+      <select id='urlField'>
+        <option value='/getUsers'>/getUsers</option>
+        <option value='/notReal'>/notReal</option>
+      </select>
+      <select id="methodSelect">
+        <option value="get">GET</option>
+        <option value="head">HEAD</option>
+      </select>
+      <input type="submit" value="Get User" />
+    </form>
+  </section>
+  <section id="content">
+  </section>
+</body>
+</html>
