@@ -36,11 +36,11 @@ const onRequest = (request, response) => {
     case '/style.css':
       htmlHandler.getCSS(request, response);
       break;
-    case '/getUsers':
+    case '/getCars':
       if (request.method === 'GET') {
-        jsonHandler.getUsers(request, response);
+        jsonHandler.getCars(request, response);
       } else if (request.method === 'HEAD') {
-        jsonHandler.getUsersMeta(request, response);
+        jsonHandler.getCarsMeta(request, response);
       }
       break;
     case '/notReal':
@@ -50,9 +50,9 @@ const onRequest = (request, response) => {
         jsonHandler.notFoundMeta(request, response);
       }
       break;
-    case '/addUser':
+    case '/addCar':
       if (request.method === 'POST') {
-        parseBody(request, response, jsonHandler.addUser);
+        parseBody(request, response, jsonHandler.addCar);
       } else {
         jsonHandler.notFound(request, response);
       }

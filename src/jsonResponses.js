@@ -23,34 +23,80 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
-const getUsers = (request, response) => {
+const getCars = (request, response) => {
   const responseJSON = {
-    users,
+    cars,
   };
-
   return respondJSON(request, response, 200, responseJSON);
 };
 
-const getUsersMeta = (request, response) => respondJSONMeta(request, response, 200);
 
-const addUser = (request, response, body) => {
+const getCarsMeta = (request, response) => respondJSONMeta(request, response, 200);
+
+
+const addCar = (request, response, body) => {
   const responseJSON = {
-    message: 'Name and age are both required.',
+    message: 'Make and model are both required.',
   };
 
-  if (!body.name || !body.age) {
+  if (!body.make || !body.model) {
     responseJSON.id = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
+
   let responseCode = 204;
 
-  if (!users[body.name]) {
+  if (!cars[body.make]) {
     responseCode = 201;
-    users[body.name] = {};
+    cars[body.make] = {};
   }
 
-  users[body.name].name = body.name;
-  users[body.name].age = body.age;
+  cars[body.make][body.model] = {
+    make: body.make,
+    model: body.model,
+    ratings: [],
+  };
+
+  if (responseCode === 201) {
+    responseJSON.message = 'Car Created Successfully';
+    return respondJSON(request, response, responseCode, responseJSON);
+  }
+
+  return respondJSONMeta(request, response, responseCode);
+};
+
+const addRating = (request, response, body) => {
+  const responseJSON = {
+    message: 'Make, model, rating, and description are all required.',
+  };
+
+  if (!body.make || !body.model || !body.rating || !body.description) {
+    responseJSON.id = 'missingParams';
+    return respondJSON(request, response, 400, responseJSON);
+  }
+
+  let responseCode = 204;
+
+  if (!cars[body.make]) {
+    responseCode = 404;
+    responseJSON.message = 'Car not found';
+    return respondJSON(request, response, responseCode, responseJSON);
+  }
+
+  if (!cars[body.make][body.model]) {
+    responseCode = 404;
+    responseJSON.message = 'Car not found';
+    return respondJSON(request, response, responseCode, responseJSON);
+  }
+
+  if (!cars[body.make][body.model].ratings) {
+    cars[body.make][body.model].ratings = [];
+  }
+
+  cars[body.make][body.model].ratings.push({
+    rating: body.rating,
+    description: body.description,
+  });
 
   if (responseCode === 201) {
     responseJSON.message = 'Created Successfully';
@@ -74,9 +120,11 @@ const notFoundMeta = (request, response) => {
 };
 
 module.exports = {
-  getUsers,
-  getUsersMeta,
-  addUser,
+  getCars,
+  getCarsMeta,
+  addCar,
+  addRating,
   notFound,
   notFoundMeta,
+
 };

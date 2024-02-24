@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Google Forms</title>
+  <title>Car API</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
 
   <style>
@@ -30,104 +30,131 @@
     }
   </style>
 
-<script>
-  const handleResponse = async (response, parseResponse) => {
-    const content = document.querySelector('#content');
+  <script>
+    const handleResponse = async (response, parseResponse) => {
+      const content = document.querySelector('#content');
 
-    switch (response.status) {
-      case 200:
-        content.innerHTML = '<b>Success</b>';
-        break;
-      case 201:
-        content.innerHTML = '<b>Created</b>';
-        break;
-      case 204:
-        content.innerHTML = '<b>No Content</b>';
-        break;
-      case 400:
-        content.innerHTML = `<b>Bad Request</b>`;
-        break;
-      case 404:
-        content.innerHTML = '<b>Resource Not Found</b>';
-        break;
-      default:
-        content.innerHTML = `Error code not implemented by client.`;
-        break;
-    }
-
-    if (parseResponse && response.status !== 204) {
-      const obj = await response.json();
-
-      if (obj.users) {
-        content.innerHTML += `<p>${JSON.stringify(obj.users)}</p>`;
+      switch (response.status) {
+        case 200:
+          content.innerHTML = '<b>Success</b>';
+          break;
+        case 201:
+          content.innerHTML = '<b>Created</b>';
+          break;
+        case 204:
+          content.innerHTML = '<b>No Content</b>';
+          break;
+        case 400:
+          content.innerHTML = `<b>Bad Request</b>`;
+          break;
+        case 404:
+          content.innerHTML = '<b>Resource Not Found</b>';
+          break;
+        default:
+          content.innerHTML = `Error code not implemented by client.`;
+          break;
       }
 
-      if (obj.message) {
-        content.innerHTML += `<p>Message: ${obj.message}</p>`;
+      if (parseResponse && response.status !== 204) {
+        const obj = await response.json();
+
+        if (obj.cars) {
+          content.innerHTML += `<p>${JSON.stringify(obj.cars)}</p>`;
+        }
+
+        if (obj.message) {
+          content.innerHTML += `<p>Message: ${obj.message}</p>`;
+        }
+
+      } else {
+        content.innerHTML += '<p>Meta Data Received</p>';
       }
+    };
 
-    } else {
-      content.innerHTML += '<p>Meta Data Received</p>';
-    }
-  };
+    const sendPost = async (form) => {
+      const url = form.getAttribute('action');
+      const make = form.querySelector('#makeField').value;
+      const model = form.querySelector('#modelField').value;
 
-  const sendPost = async (form) => {
-    const url = form.getAttribute('action');
-    const name = form.querySelector('#nameField').value;
-    const age = form.querySelector('#ageField').value;
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'x-www-form-urlencoded'
-      },
-      body: `name=${name}&age=${age}`,
-    });
-
-    handleResponse(response, true);
-  }
-
-  const requestUpdate = async (userForm) => {
-    const url = userForm.querySelector('#urlField').value;
-    const method = userForm.querySelector('#methodSelect').value;
-
-    try {
-      let response = await fetch(url, {
-        method,
+      const response = await fetch(url, {
+        method: 'POST',
         headers: {
           'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
+        body: `make=${make}&model=${model}`,
       });
 
-      handleResponse(response, method === 'get');
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
-  const init = () => {
-    const userForm = document.querySelector('#userForm');
-    const nameForm = document.querySelector('#nameForm');
-
-    const addUser = (e) => {
-      e.preventDefault();
-      sendPost(nameForm);
-      return false;
+      handleResponse(response, true);
     }
 
-    const getUsers = (e) => {
-      e.preventDefault();
-      requestUpdate(userForm);
-      return false;
+    const requestUpdate = async (getCarsForm) => {
+      const url = getCarsForm.getAttribute('action');
+      const method = getCarsForm.getAttribute('method');
+
+      try {
+        let response = await fetch(url, {
+          method,
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+
+        handleResponse(response, method === 'get');
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    const sendRating = async (ratingForm) => {
+      const url = ratingForm.getAttribute('action');
+      const make = ratingForm.querySelector('#makeRatingField').value;
+      const model = ratingForm.querySelector('#modelRatingField').value;
+      const rating = ratingForm.querySelector('#ratingField').value;
+      const description = ratingForm.querySelector('#descriptionField').value;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `make=${make}&model=${model}&rating=${rating}&description=${description}`,
+      });
+
+      handleResponse(response, true);
     }
 
-    userForm.addEventListener('submit', getUsers);
-    nameForm.addEventListener('submit', addUser);
-  };
+    const init = () => {
+      const carForm = document.querySelector('#carForm');
+      const getCarsForm = document.querySelector('#getCarsForm');
+      const ratingForm = document.querySelector('#ratingForm');
 
-  window.onload = init;
-</script>
+      const addCar = (e) => {
+        e.preventDefault();
+        sendPost(carForm);
+        return false;
+      }
+
+      const getCars = (e) => {
+        e.preventDefault();
+        requestUpdate(getCarsForm);
+        return false;
+      }
+
+      const addRating = (e) => {
+        e.preventDefault();
+        sendRating(ratingForm);
+        return false;
+      }
+
+      carForm.addEventListener('submit', addCar);
+      getCarsForm.addEventListener('submit', getCars);
+      ratingForm.addEventListener('submit', addRating);
+    };
+
+    window.onload = init;
+  </script>
 
 </head>
 
@@ -135,27 +162,29 @@
   <section class="hero is-success">
     <div class="hero-body">
       <div class="container">
-        <h1 class="title is-1">
-          Hello World
+        <h1 class="title is-1 has-text-black">
+          Car API
         </h1>
-        <p class="subtitle">
-          A Computer Science Portal for Geeks
+        <p class="subtitle has-text-black">
+          Manage your Cars
         </p>
       </div>
     </div>
-  </section>
+  </section> 
 
   <section class="section">
     <div class="container">
-      <form id="nameForm" action="/addUser" method="post">
+      <!-- Add Rating and Description Form -->
+      <h2 class="title is-2">Add Rating and Description</h2>
+      <form id="ratingForm" action="/addRating" method="post">
         <div class="field is-horizontal">
           <div class="field-label is-normal">
-            <label class="label" for="name">Name:</label>
+            <label class="label" for="make">Make:</label>
           </div>
           <div class="field-body">
             <div class="field">
               <p class="control">
-                <input id="nameField" class="input" type="text" name="name" />
+                <input id="makeRatingField" class="input" type="text" name="make" />
               </p>
             </div>
           </div>
@@ -163,12 +192,38 @@
 
         <div class="field is-horizontal">
           <div class="field-label is-normal">
-            <label class="label" for="age">Age:</label>
+            <label class="label" for="model">Model:</label>
           </div>
           <div class="field-body">
             <div class="field">
               <p class="control">
-                <input id="ageField" class="input" type="number" name="age" min="0" max="100" step="1" />
+                <input id="modelRatingField" class="input" type="text" name="model" />
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label" for="rating">Rating:</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <p class="control">
+                <input id="ratingField" class="input" type="number" name="rating" min="1" max="5" step="1" />
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label" for="description">Description:</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <p class="control">
+                <textarea id="descriptionField" class="textarea" name="description" rows="3"></textarea>
               </p>
             </div>
           </div>
@@ -179,56 +234,21 @@
           <div class="field-body">
             <div class="field">
               <p class="control">
-                <input class="button is-success" type="submit" value="Add User" />
+                <input class="button is-success" type="submit" value="Add Car"/>
               </p>
             </div>
           </div>
         </div>
       </form>
 
-      <form id="userForm" action="/getUsers" method="get">
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label" for="urlField">URL:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <p class="control">
-                <div class="select">
-                  <select id="urlField">
-                    <option value='/getUsers'>/getUsers</option>
-                    <option value='/notReal'>/notReal</option>
-                  </select>
-                </div>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label" for="methodSelect">Method:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <p class="control">
-                <div class="select">
-                  <select id="methodSelect">
-                    <option value="get">GET</option>
-                    <option value="head">HEAD</option>
-                  </select>
-                </div>
-              </p>
-            </div>
-          </div>
-        </div>
-
+      <!-- Get Cars Form -->
+      <form id="getCarsForm" action="/getCars" method="get">
         <div class="field is-horizontal">
           <div class="field-label"></div>
           <div class="field-body">
             <div class="field">
               <p class="control">
-                <input class="button is-info" type="submit" value="Get User" />
+                <input class="button is-info" type="submit" value="Get Cars" />
               </p>
             </div>
           </div>
@@ -245,3 +265,4 @@
 </body>
 
 </html>
+
