@@ -1,4 +1,5 @@
-const users = {};
+const cars = {};
+const ratings = {};
 
 const respondJSON = (request, response, status, object) => {
   const headers = {
@@ -23,16 +24,17 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
-const getCars = (request, response) => {
+const getCars = (request, response, queryParams) => {
   const responseJSON = {
     cars,
+    ratings,
+    queryParams,
   };
+
   return respondJSON(request, response, 200, responseJSON);
 };
 
-
 const getCarsMeta = (request, response) => respondJSONMeta(request, response, 200);
-
 
 const addCar = (request, response, body) => {
   const responseJSON = {
@@ -44,25 +46,11 @@ const addCar = (request, response, body) => {
     return respondJSON(request, response, 400, responseJSON);
   }
 
-  let responseCode = 204;
+  cars[body.make] = cars[body.make] || {};
+  cars[body.make][body.model] = {};
 
-  if (!cars[body.make]) {
-    responseCode = 201;
-    cars[body.make] = {};
-  }
-
-  cars[body.make][body.model] = {
-    make: body.make,
-    model: body.model,
-    ratings: [],
-  };
-
-  if (responseCode === 201) {
-    responseJSON.message = 'Car Created Successfully';
-    return respondJSON(request, response, responseCode, responseJSON);
-  }
-
-  return respondJSONMeta(request, response, responseCode);
+  responseJSON.message = 'Car added successfully';
+  return respondJSON(request, response, 201, responseJSON);
 };
 
 const addRating = (request, response, body) => {
@@ -75,35 +63,16 @@ const addRating = (request, response, body) => {
     return respondJSON(request, response, 400, responseJSON);
   }
 
-  let responseCode = 204;
+  ratings[body.make] = ratings[body.make] || {};
+  ratings[body.make][body.model] = ratings[body.make][body.model] || [];
 
-  if (!cars[body.make]) {
-    responseCode = 404;
-    responseJSON.message = 'Car not found';
-    return respondJSON(request, response, responseCode, responseJSON);
-  }
-
-  if (!cars[body.make][body.model]) {
-    responseCode = 404;
-    responseJSON.message = 'Car not found';
-    return respondJSON(request, response, responseCode, responseJSON);
-  }
-
-  if (!cars[body.make][body.model].ratings) {
-    cars[body.make][body.model].ratings = [];
-  }
-
-  cars[body.make][body.model].ratings.push({
+  ratings[body.make][body.model].push({
     rating: body.rating,
     description: body.description,
   });
 
-  if (responseCode === 201) {
-    responseJSON.message = 'Created Successfully';
-    return respondJSON(request, response, responseCode, responseJSON);
-  }
-
-  return respondJSONMeta(request, response, responseCode);
+  responseJSON.message = 'Rating added successfully';
+  return respondJSON(request, response, 201, responseJSON);
 };
 
 const notFound = (request, response) => {
@@ -126,5 +95,4 @@ module.exports = {
   addRating,
   notFound,
   notFoundMeta,
-
 };

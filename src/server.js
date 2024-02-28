@@ -1,6 +1,6 @@
 const http = require('http');
 const url = require('url');
-const query = require('querystring');
+const querystring = require('querystring');
 const htmlHandler = require('./htmlResponses.js');
 const jsonHandler = require('./jsonResponses.js');
 
@@ -21,13 +21,13 @@ const parseBody = (request, response, handler) => {
 
   request.on('end', () => {
     const bodyString = Buffer.concat(body).toString();
-    const bodyObj = query.parse(bodyString);
+    const bodyObj = querystring.parse(bodyString);
     handler(request, response, bodyObj);
   });
 };
 
 const onRequest = (request, response) => {
-  const parsedUrl = url.parse(request.url);
+  const parsedUrl = url.parse(request.url, true);
 
   switch (parsedUrl.pathname) {
     case '/':
@@ -38,7 +38,7 @@ const onRequest = (request, response) => {
       break;
     case '/getCars':
       if (request.method === 'GET') {
-        jsonHandler.getCars(request, response);
+        jsonHandler.getCars(request, response, parsedUrl.query);
       } else if (request.method === 'HEAD') {
         jsonHandler.getCarsMeta(request, response);
       }
@@ -53,6 +53,13 @@ const onRequest = (request, response) => {
     case '/addCar':
       if (request.method === 'POST') {
         parseBody(request, response, jsonHandler.addCar);
+      } else {
+        jsonHandler.notFound(request, response);
+      }
+      break;
+    case '/addRating':
+      if (request.method === 'POST') {
+        parseBody(request, response, jsonHandler.addRating);
       } else {
         jsonHandler.notFound(request, response);
       }
