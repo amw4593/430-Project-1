@@ -1,11 +1,15 @@
+// Const's to run the applicaiton correctlu
+
 const http = require('http');
 const url = require('url');
 const querystring = require('querystring');
 const htmlHandler = require('./htmlResponses.js');
 const jsonHandler = require('./jsonResponses.js');
 
+// Port to run it
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
+// parseBody will tell the body of the HTML page what to do when it recieves data
 const parseBody = (request, response, handler) => {
   const body = [];
 
@@ -26,15 +30,14 @@ const parseBody = (request, response, handler) => {
   });
 };
 
+// onRequest is a function designed to create switch hcases for each of the URLs
+// and what they are required to post
 const onRequest = (request, response) => {
   const parsedUrl = url.parse(request.url, true);
 
   switch (parsedUrl.pathname) {
     case '/':
       htmlHandler.getIndex(request, response);
-      break;
-    case '/style.css':
-      htmlHandler.getCSS(request, response);
       break;
     case '/getCars':
       if (request.method === 'GET') {
@@ -71,3 +74,5 @@ const onRequest = (request, response) => {
 };
 
 http.createServer(onRequest).listen(port);
+
+console.log(`Listening on 127.0.0.1: ${port}`);

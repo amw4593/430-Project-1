@@ -1,6 +1,8 @@
+// Constants
 const cars = {};
 const ratings = {};
 
+// respondJSON writes all data added
 const respondJSON = (request, response, status, object) => {
   const headers = {
     'Content-Type': 'application/json',
@@ -8,8 +10,12 @@ const respondJSON = (request, response, status, object) => {
 
   response.writeHead(status, headers);
 
-  if (status !== 204) {
-    response.write(JSON.stringify(object));
+  try {
+    if (status !== 204) {
+      response.write(JSON.stringify(object));
+    }
+  } catch (err) {
+    console.error('Error stringifying JSON:', err);
   }
 
   response.end();
@@ -24,6 +30,7 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
+// getCars function will take data from ratings cars, and queryParams. Its the storage for all data
 const getCars = (request, response, queryParams) => {
   const responseJSON = {
     cars,
@@ -35,7 +42,7 @@ const getCars = (request, response, queryParams) => {
 };
 
 const getCarsMeta = (request, response) => respondJSONMeta(request, response, 200);
-
+// addCar is what wiull add a car to the storage
 const addCar = (request, response, body) => {
   const responseJSON = {
     message: 'Make and model are both required.',
@@ -53,12 +60,13 @@ const addCar = (request, response, body) => {
   return respondJSON(request, response, 201, responseJSON);
 };
 
+// addRating does the same as getCars, but requires all data parameters to be added
 const addRating = (request, response, body) => {
   const responseJSON = {
     message: 'Make, model, rating, and description are all required.',
   };
 
-  if (!body.make || !body.model || !body.rating || !body.description) {
+  if (!body.rating || !body.description) {
     responseJSON.id = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
@@ -74,7 +82,7 @@ const addRating = (request, response, body) => {
   responseJSON.message = 'Rating added successfully';
   return respondJSON(request, response, 201, responseJSON);
 };
-
+// Function made for when a link is not found
 const notFound = (request, response) => {
   const responseJSON = {
     message: 'The page you are looking for was not found.',

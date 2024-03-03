@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cars.API</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-
+  <!-- Removed the style.css file to add style to html doc and utilize bulma -->
   <style>
     body {
       background-color: #f5f5f5;
@@ -31,6 +31,7 @@
   </style>
 
   <script>
+    // handleResponses handles all http code responses
     const handleResponse = async (response, parseResponse) => {
       const content = document.querySelector('#content');
 
@@ -51,23 +52,24 @@
           content.innerHTML = '<b>Resource Not Found</b>';
           break;
         default:
-          content.innerHTML = `Error code not implemented by client.`;
+          content.innerHTML = `Error code not implemented by the client.`;
           break;
       }
-
+      // Displays all responses from the client. I had issues displaying this to the webpage. 
+      // I used the API 2 mater doc we worked on in office hours as reference
       if (parseResponse && response.status !== 204) {
         const obj = await response.json();
 
         if (obj.cars) {
-          content.innerHTML += `<p>${JSON.stringify(obj.cars)}</p>`;
+          content.innerHTML += `<p>${JSON.stringify(obj.cars, null, 2)}</p>`;
         }
 
         if (obj.ratings) {
-          content.innerHTML += `<p>${JSON.stringify(obj.ratings)}</p>`;
+          content.innerHTML += `<p>${JSON.stringify(obj.ratings, null, 2)}</p>`;
         }
 
         if (obj.queryParams) {
-          content.innerHTML += `<p>Query Parameters: ${JSON.stringify(obj.queryParams)}</p>`;
+          content.innerHTML += `<p>Query Parameters: ${JSON.stringify(obj.queryParams, null, 2)}</p>`;
         }
 
         if (obj.message) {
@@ -77,7 +79,7 @@
         content.innerHTML += '<p>Meta Data Received</p>';
       }
     };
-
+    // sendPost sends the car data to the server 
     const sendPost = async (form) => {
       const url = form.getAttribute('action');
       const make = form.querySelector('#makeField').value;
@@ -93,15 +95,13 @@
 
       handleResponse(response, true);
     };
-
+    // sendRating sends the Rating data to the server 
     const sendRating = async (ratingForm) => {
       const url = ratingForm.getAttribute('action');
-      const make = ratingForm.querySelector('#makeRatingField').value;
-      const model = ratingForm.querySelector('#modelRatingField').value;
       const rating = ratingForm.querySelector('#ratingField').value;
       const description = ratingForm.querySelector('#descriptionField').value;
 
-      const response = await fetch(`${url}?make=${make}&model=${model}&rating=${rating}&description=${description}`, {
+      const response = await fetch(`${url}?rating=${rating}&description=${description}`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -111,7 +111,7 @@
 
       handleResponse(response, true);
     };
-
+    // Creates and fetches the rating system
     const requestUpdate = async (userForm) => {
       const url = userForm.getAttribute('action');
       const ratingUrl = userForm.querySelector('#urlField').value;
@@ -130,7 +130,7 @@
         console.error('Error:', error);
       }
     };
-
+    // init will initialize all previouslymade functions   
     const init = () => {
       const userForm = document.querySelector('#userForm');
       const nameForm = document.querySelector('#nameForm');
@@ -163,6 +163,7 @@
   </script>
 
 </head>
+<!-- Bulma File -->
 
 <body>
   <section class="hero is-success">
@@ -180,7 +181,6 @@
 
   <section class="section">
     <div class="container">
-      <!-- Add Car Form -->
       <h2 class="title is-2">Add Car</h2>
       <form id="nameForm" action="/addCar" method="post">
         <div class="field is-horizontal">
@@ -214,42 +214,15 @@
           <div class="field-body">
             <div class="field">
               <p class="control">
-                <input class="button is-success" type="submit" value="Add Car"/>
+                <input class="button is-success" type="submit" value="Add Car" />
               </p>
             </div>
           </div>
         </div>
       </form>
 
-      <!-- Add Rating Form -->
       <h2 class="title is-2">Add Rating</h2>
       <form id="ratingForm" action="/addRating" method="post">
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label" for="makeRatingField">Make:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <p class="control">
-                <input id="makeRatingField" class="input" type="text" name="make" />
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label" for="modelRatingField">Model:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <p class="control">
-                <input id="modelRatingField" class="input" type="text" name="model" />
-              </p>
-            </div>
-          </div>
-        </div>
-
         <div class="field is-horizontal">
           <div class="field-label is-normal">
             <label class="label" for="ratingField">Rating:</label>
@@ -288,57 +261,11 @@
         </div>
       </form>
 
-      <!-- Get Users Form -->
-      <h2 class="title is-2">Get Users</h2>
-      <form id="userForm" action="/getCars" method="get">
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label" for="urlField">Rating URL:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <p class="control">
-                <input id="urlField" class="input" type="text" name="ratingUrl" />
-              </p>
-            </div>
-          </div>
+      <section class="section">
+        <div class="container">
+          <div id="content"></div>
         </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label" for="methodSelect">Method:</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <p class="control">
-                <div class="select">
-                  <select id="methodSelect" name="method">
-                    <option value="get">GET</option>
-                    <option value="head">HEAD</option>
-                  </select>
-                </div>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="field is-horizontal">
-          <div class="field-label"></div>
-          <div class="field-body">
-            <div class="field">
-              <p class="control">
-                <input class="button is-info" type="submit" value="Get Users" />
-              </p>
-            </div>
-          </div>
-        </div>
-      </form>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container">
-      <div id="content"></div>
+      </section>
     </div>
   </section>
 </body>
